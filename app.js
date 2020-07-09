@@ -13,9 +13,9 @@ import globalRouter from "./routers/globalRouter";
 const app = express();
 
 app.set("view engine","pug");
-
 //middleware
 app.use(helmet());
+app.use("/uploads", express.static("uploads"));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
