@@ -1,19 +1,25 @@
 import express from "express";
 import routes from "../routes";
 import { home, search } from "../controller/videoController";
-import { getLogin, postLogin, logout, getJoin, postJoin } from "../controller/userController";
+import {
+  getLogin,
+  postLogin,
+  logout,
+  getJoin,
+  postJoin,
+} from "../controller/userController";
 
 const globalRouter = express.Router();
 
-globalRouter.get(routes.join,getJoin);
-globalRouter.post(routes.join,postJoin);//주의 getㄴㄴ
+globalRouter.get(routes.join, getJoin);
+globalRouter.post(routes.join, postJoin, postLogin); //주의 getㄴㄴ
 
-globalRouter.get(routes.login,getLogin);
-globalRouter.post(routes.login,postLogin);
+globalRouter.get(routes.login, getLogin);
+globalRouter.post(routes.login, postLogin);
 
-globalRouter.get(routes.home,home);
-globalRouter.get(routes.search,search);
+globalRouter.get(routes.home, home);
+globalRouter.get(routes.search, search);
 
-globalRouter.get(routes.logout,logout);
+globalRouter.get(routes.logout, logout);
 
-export default globalRouter;//전체 export
+export default globalRouter; //전체 export
