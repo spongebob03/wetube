@@ -1,12 +1,11 @@
 import Video from "../models/Video";
 
-export const home = (req, res) => {
+export const home = async(req, res) => {
     console.log("1");
-    Video.find({}, (error, videos) => {
-        console.log("3!");
-        return res.render("home", {pageTitle: "Home", videos});
-    });
-    console.log("2")
+    const videos = await Video.find({});
+    console.log("2");
+    console.log(videos);
+    return res.render("home", {pageTitle: "Home", videos});
 };
 export const watch = (req, res) => {
     const {id} = req.params;
