@@ -19,8 +19,6 @@ export const watch = async (req, res) => {
     return res.render("watch", {pageTitle: video.title, video });
 };
 
-export const upload = (req, res) => res.send("Upload");
-
 export const getEdit = async (req, res) => {
     const { id } = req.params;
     const video = await Video.findById(id);
@@ -46,7 +44,11 @@ export const postEdit = async (req, res) => {
     return res.redirect(`/videos/${id}`);
 };
 
-export const deleteVideo = (req, res) => res.send("Delete Video");
+export const deleteVideo = async(req, res) => {
+    const { id } = req.params;
+    await Video.findByIdAndDelete(id);
+    return res.redirect("/");
+}
 
 export const search = (req, res) => res.send("Search");
 
