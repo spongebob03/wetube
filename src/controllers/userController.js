@@ -2,6 +2,7 @@ import User from "../models/User";
 import bcrypt from "bcrypt";
 import fetch from "node-fetch";
 
+// #region Join
 export const getJoin = (req, res) => res.render("Join", { pageTitle: "Join" });
 export const postJoin = async (req, res) => {
     const {name, username, email, password, password2, location} = req.body;
@@ -36,7 +37,9 @@ export const postJoin = async (req, res) => {
         });
     }
 };
+// #endregion
 
+// #region Login
 export const getLogin = (req, res) => res.render("login", { pageTitle: "Login" });
 export const postLogin = async (req, res) => {
     const { username, password } = req.body;
@@ -60,7 +63,9 @@ export const postLogin = async (req, res) => {
     req.session.user = user;
     return res.redirect("/");
 };
+// #endregion
 
+// #region GithubLogin
 export const startGithubLogin = (req, res) => {
     const baseUrl = "https://github.com/login/oauth/authorize";
     const config = {
@@ -135,14 +140,18 @@ export const finishGithubLogin = async(req, res) => {
         return res.redirect("/login");
     }
 };
+// #endregion
 
+// #region Logout
 export const logout = (req, res) => {
     req.session.destroy();
     return res.redirect("/");
 }
+// #endregion
 
 export const see = (req, res) => res.send("See");
 
+// #region Edit
 export const getEdit = (req, res) => {
     return res.render("edit-profile", { pageTitle: "Edit Profile" });
 };
@@ -153,13 +162,42 @@ export const postEdit = async (req, res) => {
         },
         body: { name, email, username, location },
     } = req;
-    await User.findByIdAndUpdate(_id, {
-        name,
-        email,
-        username,
-        location,
-    });
-    return res.render("edit-profile");
+
+    try{
+        const exists = await User.exists({ $or: [{ username }, { email }] });
+        if (exists){
+        return res.status(400).redirect("/users/edit", {
+            pageTitle: "Edit profile1",
+            errorMessage: "This username/email is already taken.",
+        });
+    }
+    } catch(error) {
+        //❌ 여기서 걸림
+        console.log(error);
+        return res.status(400).redirect("/users/edit", {
+            pageTitle: "Edit profile2",
+            errorMessage: "This username/email is already taken.",
+        });
+    }
+    
+    try{
+        const updatedUser = await User.findByIdAndUpdate(_id, {
+            name,
+            email,
+            username,
+            location,
+            },
+            { new: true }
+        );
+        req.session.user = updatedUser;
+        return res.redirect("/users/edit");
+    } catch(error) {
+        return res.status(400).render("/users/edit", {
+            pageTitle: "Edit profile3",
+            errorMessage: error._message,
+        });
+    }
 };
+// #endregion
 
 export const remove = (req, res) => res.send("Remove");
