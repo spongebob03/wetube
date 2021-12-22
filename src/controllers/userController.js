@@ -163,41 +163,58 @@ export const postEdit = async (req, res) => {
         body: { name, email, username, location },
     } = req;
 
-    try{
-        const exists = await User.exists({ $or: [{ username }, { email }] });
-        if (exists){
+    const exists = await User.exists({ $or: [{ username }, { email }] });
+    //username, email 중복 예외처리
+    if (exists){
         return res.status(400).redirect("/users/edit", {
-            pageTitle: "Edit profile1",
+            pageTitle: "Edit profile",
             errorMessage: "This username/email is already taken.",
         });
     }
-    } catch(error) {
-        //❌ 여기서 걸림
-        console.log(error);
-        return res.status(400).redirect("/users/edit", {
-            pageTitle: "Edit profile2",
-            errorMessage: "This username/email is already taken.",
-        });
-    }
-    
-    try{
-        const updatedUser = await User.findByIdAndUpdate(_id, {
-            name,
-            email,
-            username,
-            location,
-            },
-            { new: true }
-        );
-        req.session.user = updatedUser;
-        return res.redirect("/users/edit");
-    } catch(error) {
-        return res.status(400).render("/users/edit", {
-            pageTitle: "Edit profile3",
-            errorMessage: error._message,
-        });
-    }
+    const updatedUser = await User.findByIdAndUpdate(_id, {
+        name,
+        email,
+        username,
+        location,
+        },
+        { new: true }
+    );
+    req.session.user = updatedUser;
+    return res.redirect("/users/edit");
 };
 // #endregion
 
+// #region ChangePassword
+export const getChangePassword = (req, res) => {
+    if (req.session.user.socialOnly === true) {
+        return res.redirect("/");
+    }
+    return res.render("users/change-password", {pageTitle: "Change Password"});
+};
+export const postChangePassword = async (req, res) => {
+    const {
+        session: {
+            user: { _id },
+        },
+        body: {oldPassword, newPassword, newPasswordConfirm },
+    } = req;
+    const user = await User.findById(_id);
+    const ok = await bcrypt.compare(oldPassword, user.password);
+    if (!ok) {
+        return res.status(400).render("users/change-password", {
+            pageTitle: "Change Password",
+            errorMessage: "The current password is incorrect", 
+        });
+    }
+    if (newPassword !== newPasswordConfirm) {
+        return res.status(400).render("users/change-password", {
+            pageTitle: "Change Password",
+            errorMessage: "The pw does not match the confirmation", 
+        });
+    }
+    user.password = newPassword;
+    await user.save();
+    return res.redirect("/users/logout");
+};
+// #endregion
 export const remove = (req, res) => res.send("Remove");
