@@ -164,9 +164,11 @@ export const postEdit = async (req, res) => {
         file,
     } = req;
 
-    const exists = await User.exists({ $or: [{ username }, { email }] });
+    const existsName = await User.findOne({ username });
+    const existsEmail = await User.findOne({ email });
     //username, email 중복 예외처리
-    if (exists){
+    if ((existsName && existsName._id != _id) || (existsEmail && existsEmail._id != _id))
+    {
         return res.status(400).redirect("/users/edit", {
             pageTitle: "Edit profile",
             errorMessage: "This username/email is already taken.",
